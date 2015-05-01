@@ -81,6 +81,7 @@ public class Scheduler
 		}
 		return macList;
 	}
+	
 	public static TaskList readTasks()
 	{
 		TaskList taskList = new TaskList();
@@ -146,13 +147,20 @@ public class Scheduler
 		while(true)
 		{
 			// loop over all the active machines and remove all the tasks which have completed
+			//System.out.println("Number of active machines in the system: "+activeMachines.size());
 			for(int x = 0; x < activeMachines.size() ; x++)
 			{
+				//System.out.println("Active machine number: "+x);
 				SchedulerEntry se = activeMachines.get(x);
+				//System.out.println("Number of active tasks: "+se.getSubmitQ().size());
+				if(se.getSubmitQ().size() == 0){
+					activeMachines.remove(x);
+				}
 				for(int y = 0; y < se.getSubmitQ().size(); y++)
 				{
 					SubmittedTask st = se.getSubmitQ().peek();
-					if(st.getScheduledTime()+ st.getEstimatedTime() == global_time)
+					System.out.println("schdTime: "+st.getScheduledTime()+" etc: "+st.getEstimatedTime()+" global "+global_time+" cores "+se.getState().getCores());
+					if(st.getScheduledTime()+ st.getEstimatedTime() <= global_time)
 					{
 						se.getState().setCores(se.getState().getCores()+st.getMacState().getCores());
 						se.getState().setDiskSize(se.getState().getDiskSize()+st.getMacState().getDiskSize());
@@ -166,10 +174,15 @@ public class Scheduler
 					}
 				}
 			}
+			
+			// Go over the list of submitted tasks to be scheduled
+			//System.out.println("Current submitted task list size: "+taskList.getTaskQ().size());
 			for(int i = 0; i < taskList.getTaskQ().size();  i++ )
 			{
 				Task t = taskList.getTaskQ().get(i);
-				System.out.println(t.getStartTime() + " " + global_time);
+				//System.out.println(t.getStartTime() + " " + global_time);
+				// If tasks fits the time to process requirement then process it
+				// else do nothing for this task
 				if(t.getStartTime() <= global_time)
 				{
 					String taskName = t.getName();
@@ -177,7 +190,10 @@ public class Scheduler
 					double cost[] = t.getCost();
 					MachineRawList validMacList = new MachineRawList();
 					MachineRaw validMac = new MachineRaw();
-					System.out.println("maclistsize:" +  macList.getMacList().size());
+					//System.out.println("maclistsize:" +  macList.getMacList().size());
+					System.out.println("Loops over the machine list of size: "+macList.getMacList().size());
+					// Lets loop over the list of all machines to get the machines that fulfills the tasks
+					// performance requirements
 					for(int j = 0; j < macList.getMacList().size(); j++)
 					{
 						double etc = 0.0;
@@ -188,7 +204,7 @@ public class Scheduler
 							int n = (int)Math.round(t.getParameters().get(0));
 							NQueensTask nq = (NQueensTask) mr.getTaskMap().get("nqueens");
 							etc = nq.getTime(n, nq.getAlpha());
-							nq.setTime(etc);
+							nq.setTime(etc); //NT - This is just updated locally
 						}
 						else if(taskName.equals("sort"))
 						{
@@ -231,21 +247,25 @@ public class Scheduler
 							// those machines where the estimated time to complete the task is lesser than the waiting 
 							// time specified by the user or the cost the user agrees to pay is lesser than the cost 
 							// of the machine
-							validMac.setState(mr.getState());
+							validMac.setState(mr.getState()); // NT - Actually no need
 							validMac.setTaskMap(mr.getTaskMap());
 							validMacList.getMacList().add(validMac);	
 						}
 					}	
 					
+					// Now we have a list of all the machines on which this task performs well
+					System.out.println("Number of valid machine in the task list: "+ validMacList.getMacList().size());
 					boolean found = false;
 					double lowestCost = Double.MAX_VALUE;
 					SchedulerEntry activeMacChosen = new SchedulerEntry();
 					MachineRaw bestMac = new MachineRaw();
 					double etc = 0;
 					SubmittedTask subTask = new SubmittedTask();
-					double timeToScheduleNext_n = Double.MAX_VALUE;
+					double timeToScheduleNext_n = Double.MAX_VALUE;	
+					System.out.println("ValidMacListsize: "+validMacList.getMacList().size());
 					for(int k = 0; k < validMacList.getMacList().size(); k++)
-					{
+					{					
+						// First check if the machine is already active
 						for(int m = 0; m < activeMachines.size(); m++)
 						{		
 							if(activeMachines.get(m).getState().getId() == validMacList.getMacList().get(k).getState().getId())
@@ -263,14 +283,17 @@ public class Scheduler
 											if(st.getEstimatedTime()+st.getScheduledTime() <timeToScheduleNext_n)
 												activeMacChosen.setTimeToScheduleNext(timeToScheduleNext_n);
 										}
+										subTask.getMacState().setCores(1);
 									}
 									else
 									{
-										subTask.setState(true);
+										subTask.setState(true); // This greedy approach????
 										activeMacChosen.setTimeToScheduleNext(global_time);										
-									}
+									}									
+									//etc = nq.getTime(); // NT - This will be null
+									int n = (int)Math.round(t.getParameters().get(0));
 									NQueensTask nq = (NQueensTask) bestMac.getTaskMap().get("nqueens");
-									etc = nq.getTime(); 
+									etc = nq.getTime(n, nq.getAlpha());
 								}
 								else if(t.getName().equals("sort"))
 								{
@@ -306,7 +329,9 @@ public class Scheduler
 							}
 						}
 					}
-										
+					
+					// The machine chosen is already active 
+					// Lets just update the Submit queue for this machine
 					if(found)
 					{
 						subTask.setEstimatedTime(etc);
@@ -314,14 +339,18 @@ public class Scheduler
 						subTask.setName(t.getName());
 						subTask.setScheduledTime(global_time);
 						subTask.setStartTime(t.getStartTime());
-						MachineState subTaskMacState = bestMac.getState();
+						MachineState subTaskMacState = bestMac.getState(); // NT - This is wrong. will put entire resource value
 						// machines available resources get reduced based on the incoming task
+						System.out.println(activeMacChosen.getState().getCores()-subTaskMacState.getCores());
 						activeMacChosen.getState().setCores(activeMacChosen.getState().getCores()-subTaskMacState.getCores());
 						activeMacChosen.getState().setDiskSize(activeMacChosen.getState().getDiskSize()-subTaskMacState.getDiskSize());
 						activeMacChosen.getState().setMemory(activeMacChosen.getState().getMemory()-subTaskMacState.getMemory());
 						activeMacChosen.getState().setNwBandwidth(activeMacChosen.getState().getNwBandwidth()-subTaskMacState.getNwBandwidth());
 						// add the task to the submitted queue of the machine
 						activeMacChosen.addSubmitTask(subTask);
+						// TODO - remove the task from the tasklist as its already submitted
+						// before continuing onto the next task
+						taskList.getTaskQ().remove(t);
 						continue;
 					}
 					
@@ -339,11 +368,16 @@ public class Scheduler
 							bestMac = validMacList.getMacList().get(k1);
 						}
 					}
-					bestMachine.setState(bestMachine.getState());
+					
+					// Found the machine with lowest cost now set it up in 
+					// active task list
+					bestMachine.setState(bestMac.getState()); // NT - wow!! missed thing
 					if(t.getName().equals("nqueens"))
 					{
+						int n = (int)Math.round(t.getParameters().get(0));
 						NQueensTask nq = (NQueensTask) bestMac.getTaskMap().get("nqueens");
 						subTask.setEstimatedTime(nq.getTime()); 
+						subTask.getMacState().setCores(1);
 					}
 					else if(t.getName().equals("sort"))
 					{
@@ -377,19 +411,20 @@ public class Scheduler
 					bestMachine.setTimeToScheduleNext(0);
 					MachineState subTaskMacState = bestMac.getState();
 					// machines available resources get reduced based on the incoming task
-					bestMachine.getState().setCores(bestMachine.getState().getCores()-subTaskMacState.getCores());
-					bestMachine.getState().setDiskSize(bestMachine.getState().getDiskSize()-subTaskMacState.getDiskSize());
-					bestMachine.getState().setMemory(bestMachine.getState().getMemory()-subTaskMacState.getMemory());
-					bestMachine.getState().setNwBandwidth(bestMachine.getState().getNwBandwidth()-subTaskMacState.getNwBandwidth());
+					System.out.println(bestMachine.getState().getCores()+" "+subTaskMacState.getCores());
+					bestMachine.getState().setCores(bestMachine.getState().getCores()-subTask.getMacState().getCores());
+					//bestMachine.getState().setDiskSize(bestMachine.getState().getDiskSize()-subTaskMacState.getDiskSize());
+					//bestMachine.getState().setMemory(bestMachine.getState().getMemory()-subTaskMacState.getMemory());
+					//bestMachine.getState().setNwBandwidth(bestMachine.getState().getNwBandwidth()-subTaskMacState.getNwBandwidth());
 					// this machine now gets into the list of currently active machines
 					activeMachines.add(bestMachine);
-				}
-				else
-				{
-					global_time++;
-					break;
+					// TODO - remove the task from the taskList now
+					taskList.getTaskQ().remove(t);
 				}
 			}
+			// we are done processing the tasks for current global time
+			// Time to reset the global clock				
+			global_time++;
 		}
 	}
 }

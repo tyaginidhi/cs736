@@ -9,7 +9,7 @@ public class SubmittedTask
 	private double startTime;
 	private double scheduledTime;
 	private double estimatedTime;
-	private MachineState macState; // machine resources as being utilized by this task
+	private MachineState macState = new MachineState(); // machine resources as being utilized by this task
 	
 	public String getName() {
 		return name;
