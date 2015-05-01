@@ -1,14 +1,23 @@
 package simulator;
+import java.util.ArrayList;
 import java.util.List;
 
 import simulator.Task;
 
 public class TaskList 
 {
-	List<Task> taskQ;
+	private List<Task> taskQ = new ArrayList<Task>();
 
-	public void addTask(Task t)
+	public List<Task> getTaskQ() {
+		return taskQ;
+	}
+
+	public void setTaskQ(List<Task> taskQ) {
+		this.taskQ = taskQ;
+	}
+	
+	public List<Task> getTaskQList()
 	{
-		this.taskQ.add(t);
+		return this.taskQ;
 	}
 }

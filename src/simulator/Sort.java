@@ -2,9 +2,9 @@ package simulator;
 
 public class Sort {
 
-	int diskSize;
-	double bufferSize;
-	double time;
+	private int diskSize;
+	private double bufferSize;
+	private double time;
 	public int getDiskSize() {
 		return diskSize;
 	}
@@ -19,6 +19,10 @@ public class Sort {
 	}
 	public double getTime(int diskSize, double bufferSize) {
 		return time;
+	}
+	public double getTime()
+	{
+		return this.time;
 	}
 	public void setTime(double time) {
 		this.time = time;

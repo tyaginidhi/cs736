@@ -2,12 +2,12 @@ package simulator;
 
 public class MachineState 
 {
-	long id;
-	int cores;
-	double cost;
-	long diskSize;
-	long nwBandwidth;
-	long memory;
+	private long id;
+	private int cores;
+	private double cost;
+	private long diskSize;
+	private long nwBandwidth;
+	private long memory;
 	
 	public long getId() {
 		return id;

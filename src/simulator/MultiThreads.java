@@ -2,8 +2,8 @@ package simulator;
 
 public class MultiThreads {
 
-	int n;
-	double time;
+	private int n;
+	private double time;
 	public int getN() {
 		return n;
 	}
@@ -16,5 +16,8 @@ public class MultiThreads {
 	public void setTime(double time) {
 		this.time = time;
 	}
-	
+	public double getTime()
+	{
+		return this.time;
+	}
 }

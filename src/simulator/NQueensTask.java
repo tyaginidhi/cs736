@@ -2,10 +2,14 @@ package simulator;
 
 public class NQueensTask 
 {
-	int n;
-	double alpha;
-	double time;
+	private int n;
+	private double alpha;
+	private double time;
+	private int cores = 1;
 	
+	public int getCores() {
+		return cores;
+	}
 	public int getN() {
 		return n;
 	}
@@ -17,6 +21,11 @@ public class NQueensTask
 	}
 	public void setAlpha(double alpha) {
 		this.alpha = alpha;
+	}
+	
+	public double getTime()
+	{
+		return this.time;
 	}
 	public double getTime(int n, double alpha) 
 	{		

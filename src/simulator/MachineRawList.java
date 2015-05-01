@@ -1,14 +1,18 @@
 package simulator;
+import java.util.ArrayList;
 import java.util.List;
 
 import simulator.MachineRaw;
 
 public class MachineRawList 
 {
-	List<MachineRaw> macList;
+	private List<MachineRaw> macList = new ArrayList<MachineRaw>();
 	
-	public void addMachine(MachineRaw m)
-	{
-		this.macList.add(m);
+	public List<MachineRaw> getMacList() {
+		return macList;
+	}
+
+	public void setMacList(List<MachineRaw> macList) {
+		this.macList = macList;
 	}
 }

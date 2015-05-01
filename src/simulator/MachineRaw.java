@@ -4,8 +4,8 @@ import java.util.Map;
 
 public class MachineRaw 
 {
-	MachineState state;
-	Map<String, Object> taskMap;
+	private MachineState state;
+	private Map<String, Object> taskMap;
 		
 	public Map<String, Object> getTaskMap() {
 		return taskMap;

@@ -3,11 +3,11 @@ import java.util.List;
 
 
 public class Task {
-	double startTime;
-	String name;
-	List<Double> parameters;
-	double cost[] = new double[3];
-	double waitingTime[] = new double[3];
+	private double startTime;
+	private String name;
+	private List<Double> parameters;
+	private double cost[] = new double[3];
+	private double waitingTime[] = new double[3];
 	
 	public void setParameters(List<Double> parameters) {
 		this.parameters = parameters;

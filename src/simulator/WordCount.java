@@ -2,8 +2,8 @@ package simulator;
 
 public class WordCount {
 
-	double memSize;
-	double time;
+	private double memSize;
+	private double time;
 	
 	public double getMemSize() 
 	{
@@ -19,6 +19,10 @@ public class WordCount {
 	public void setTime(double time) 
 	{
 		this.time = time;
+	}
+	public double getTime()
+	{
+		return this.time;
 	}
 	
 }
