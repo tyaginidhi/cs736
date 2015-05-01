@@ -22,6 +22,7 @@ public class Scheduler
 			BufferedReader reader = new BufferedReader(new FileReader("stats.txt"));
 		    String line;
 		    String words[];
+		    System.out.println("macid; disk size; nw bw; RAM; cores,;mac cost; params");
 		    while ((line = reader.readLine())!=null)
 		    {	
 				  System.out.println(line);
@@ -94,6 +95,7 @@ public class Scheduler
 			BufferedReader reader = new BufferedReader(new FileReader("tasks.txt"));
 		    String line;
 		    String words[];
+		    System.out.println("start time; task name; parameters; cost; waiting time; id");
 		    while ((line = reader.readLine()) != null)
 		    {	
 				  System.out.println(line);  
@@ -159,7 +161,7 @@ public class Scheduler
 				for(int y = 0; y < se.getSubmitQ().size(); y++)
 				{
 					SubmittedTask st = se.getSubmitQ().peek();
-					System.out.println("schdTime: "+st.getScheduledTime()+" etc: "+st.getEstimatedTime()+" global "+global_time+" cores "+se.getState().getCores());
+					//System.out.println("schdTime: "+st.getScheduledTime()+" etc: "+st.getEstimatedTime()+" global "+global_time+" cores "+se.getState().getCores());
 					if(st.getScheduledTime()+ st.getEstimatedTime() <= global_time)
 					{
 						se.getState().setCores(se.getState().getCores()+st.getMacState().getCores());
@@ -168,7 +170,7 @@ public class Scheduler
 						se.getState().setNwBandwidth(se.getState().getNwBandwidth()+st.getMacState().getNwBandwidth());
 						se.getSubmitQ().remove(st);
 						
-						System.out.println(se.getState().getId()+ " " +st.getName() + " " + st.getId() + " "+
+						System.out.println("Task completed: "+se.getState().getId()+ " " +st.getName() + " " + st.getId() + " "+
 						st.getScheduledTime() + " " + st.getEstimatedTime() +" " +st.getStartTime() + " " + st.getMacState());
 						// move the first waiting task to running, provided resources become available
 					}
@@ -292,7 +294,7 @@ public class Scheduler
 									}									
 									//etc = nq.getTime(); // NT - This will be null
 									int n = (int)Math.round(t.getParameters().get(0));
-									NQueensTask nq = (NQueensTask) bestMac.getTaskMap().get("nqueens");
+									NQueensTask nq = (NQueensTask) validMacList.getMacList().get(k).getTaskMap().get("nqueens");
 									etc = nq.getTime(n, nq.getAlpha());
 								}
 								else if(t.getName().equals("sort"))
